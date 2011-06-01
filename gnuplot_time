@@ -5,10 +5,19 @@
 
 usage() {
 	cat <<EOF
-Usage: `basename $0` [--help] [--pdf FILENAME] [FILE] [FIELD...]
+Usage: `basename $0` [--help] [--pdf FILENAME] ( FILE [FIELD...] )...
+
+--show      - show the plot script
+--noplot    - do not run gnuplot
+--logscale  - use a logrythmic scale
+--nolines   - do not use lines to join the points
+
+Files a tab separated data, first column has epoch date data.  Comments are
+allowed and specially formatted comments can name the columns.
 EOF
 }
 
+SET_LINES="set style data lines"
 PLOT=true
 OUT=screen
 while [ -n "$1" ]; do
@@ -19,6 +28,8 @@ while [ -n "$1" ]; do
 			unset PLOT ;;
 		--log|--logscale)
 			SET_LOGSCALE="set logscale y" ;;
+		--nolines)
+			SET_LINES="" ;;
 		--pdf)
 			OUT=pdf
 			OUTFILENAME=$2
@@ -62,7 +73,7 @@ TEMPFILE=`tempfile`
 		set xlabel 'Time'
 		set ylabel 'units'
 
-		set style data lines
+		$SET_LINES
 		set timefmt '%s'
 		set xdata time
 		set format x "%Y-%m-%d %H:%M"
