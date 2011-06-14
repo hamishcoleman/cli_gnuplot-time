@@ -104,18 +104,18 @@ EOF
 
 		case "$f" in
 			*)
-		# This arg is a column
+			# This arg is a column
 
-		# try to guess the column name
-		FIELD=`head -500 $FILE | egrep "^#column $f " | cut -d" " -f3-`
+			# try to guess the column name
+			FIELD=`head -500 $FILE | egrep "^#column $f " | cut -d" " -f3-`
 
-		if [ -n "$FIELD" ]; then
-			TITLE="$FIELD:"
-		else
-			TITLE=""
-		fi
-		TITLE="$TITLE$FILE:$f"
-		THIS="'$FILE' using 1:$f title '$TITLE'"
+			if [ -n "$FIELD" ]; then
+				TITLE="$FIELD:"
+			else
+				TITLE=""
+			fi
+			TITLE="$TITLE$FILE:$f"
+			THIS="'$FILE' using 1:$f title '$TITLE'"
 			;;
 		esac
 
