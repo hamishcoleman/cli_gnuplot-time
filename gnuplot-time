@@ -113,11 +113,12 @@ EOF
 			TITLE=""
 		fi
 		TITLE="$TITLE$FILE:$f"
+		THIS="'$FILE' using 1:$f title '$TITLE'"
 
 		if [ -n "$LINE" ]; then
 			LINE="$LINE,"
 		fi
-		LINE="$LINE '$FILE' using 1:$f title '$TITLE'"
+		LINE="$LINE $THIS"
 	done
 
 	if [ -z "$LINE" ]; then
