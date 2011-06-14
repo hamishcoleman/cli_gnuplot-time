@@ -60,8 +60,6 @@ if [ -z "$1" ]; then
 	echo need filename
 	exit 1
 fi
-FILE="$1"
-shift
 
 TEMPFILE=`tempfile`
 
