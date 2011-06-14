@@ -102,6 +102,8 @@ EOF
 			continue
 		fi
 
+		case "$f" in
+			*)
 		# This arg is a column
 
 		# try to guess the column name
@@ -114,6 +116,8 @@ EOF
 		fi
 		TITLE="$TITLE$FILE:$f"
 		THIS="'$FILE' using 1:$f title '$TITLE'"
+			;;
+		esac
 
 		if [ -n "$LINE" ]; then
 			LINE="$LINE,"
