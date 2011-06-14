@@ -103,7 +103,11 @@ EOF
 		fi
 
 		case "$f" in
-			*)
+		f:*)
+			# This arg is a function
+			THIS=`echo $f |cut -d: -f2-`
+			;;
+		*)
 			# This arg is a column
 
 			# try to guess the column name
