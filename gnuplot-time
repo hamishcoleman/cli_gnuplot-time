@@ -147,7 +147,7 @@ if [ -n "$SHOW" ]; then
 fi
 
 if [ -n "$PLOT" ]; then
-	gnuplot $TEMPFILE
+	gnuplot $TEMPFILE </dev/null
 fi
 
 rm -f $TEMPFILE
