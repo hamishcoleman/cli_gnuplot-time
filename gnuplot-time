@@ -109,7 +109,7 @@ EOF
 			# This arg is a column
 
 			# try to guess the column name
-			FIELD=`head -500 $FILE | egrep "^#column $f " | cut -d" " -f3-`
+			FIELD=`head -500 $FILE | egrep "^#column $f " |head -1 | cut -d" " -f3-`
 
 			if [ -n "$FIELD" ]; then
 				TITLE="$FIELD:"
