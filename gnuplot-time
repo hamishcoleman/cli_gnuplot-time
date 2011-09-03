@@ -11,6 +11,7 @@ Usage: `basename $0` [--help] [--pdf FILENAME] ( FILE [FIELD...] )...
 --noplot    - do not run gnuplot
 --logscale  - use a logrythmic scale
 --nolines   - do not use lines to join the points
+--xcol N    - specify the column number for the X axis
 
 Files a tab separated data, first column has epoch date data.  Comments are
 allowed and specially formatted comments can name the columns.
@@ -20,6 +21,7 @@ EOF
 SET_LINES="set style data lines"
 PLOT=true
 OUT=screen
+XCOL=1
 while [ -n "$1" ]; do
 	case "$1" in
 		--show)
@@ -37,6 +39,9 @@ while [ -n "$1" ]; do
 		--ps)
 			OUT=postscript
 			OUTFILENAME=$2
+			shift ;;
+		--xcol|-x)
+			XCOL=$2;
 			shift ;;
 		--help)
 			usage
@@ -117,7 +122,7 @@ EOF
 				TITLE=""
 			fi
 			TITLE="$TITLE$FILE:$f"
-			THIS="'$FILE' using 1:$f title '$TITLE'"
+			THIS="'$FILE' using $XCOL:$f title '$TITLE'"
 			;;
 		esac
 
@@ -129,7 +134,7 @@ EOF
 
 	if [ -z "$LINE" ]; then
 		# default to column 2, if none are on the cmdline
-		LINE="'$FILE' using 1:2 title '$FILE:2'"
+		LINE="'$FILE' using $XCOL:2 title '$FILE:2'"
 		
 	fi
 
