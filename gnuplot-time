@@ -100,6 +100,7 @@ TEMPFILE=`tempfile`
 		set mouse clipboardformat 5
 		set mouse mouseformat 5
 		set grid
+		set autoscale fix
 
 		$SET_LOGSCALE
 EOF
