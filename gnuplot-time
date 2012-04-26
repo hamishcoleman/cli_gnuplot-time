@@ -102,6 +102,8 @@ TEMPFILE=`tempfile`
 		set grid
 		set autoscale fix
 
+set key left top Left title 'Legend' box 3
+
 		$SET_LOGSCALE
 EOF
 
