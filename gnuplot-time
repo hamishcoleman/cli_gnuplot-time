@@ -120,7 +120,17 @@ EOF
 	for f in $*; do
 		if [ -e $f ]; then
 			# This arg is a filename
-			FILE=$f
+			case "$f" in
+				*.gz) FILECMD="gzip -dc $f";;
+				*.xz) FILECMD="xz -dc $f";;
+				*) FILE=$f; unset FILECMD;;
+			esac
+			if [ -n "$FILECMD" ]; then
+				FILE="<$FILECMD"
+			else
+				FILECMD="cat $FILE"
+			fi
+			FILE_TITLE=$f
 			continue
 		fi
 
@@ -133,14 +143,14 @@ EOF
 			# This arg is a column
 
 			# try to guess the column name
-			FIELD=`head -500 $FILE | egrep "^#column $f " |head -1 | cut -d" " -f3-`
+			FIELD=`$FILECMD | head -500 | egrep "^#column $f " |head -1 | cut -d" " -f3-`
 
 			if [ -n "$FIELD" ]; then
 				TITLE="$FIELD:"
 			else
 				TITLE=""
 			fi
-			TITLE="$TITLE$FILE:$f"
+			TITLE="$TITLE$FILE_TITLE:$f"
 			THIS="'$FILE' using $XCOL:$f $SMOOTH title '$TITLE'"
 			;;
 		esac
