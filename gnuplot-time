@@ -26,7 +26,7 @@ PLOT=true
 OUT=screen
 XCOL=1
 X_FORMAT="%Y-%m-%d %H:%M"
-X_TITLE="Time"
+X_TITLE="Time (GMT)"
 Y_TITLE="units"
 while [ -n "$1" ]; do
 	case "$1" in
@@ -146,7 +146,7 @@ EOF
 			FIELD=`$FILECMD | head -500 | egrep "^#column $f " |head -1 | cut -d" " -f3-`
 
 			if [ -n "$FIELD" ]; then
-				TITLE="$FIELD:"
+				TITLE="$FIELD="
 			else
 				TITLE=""
 			fi
