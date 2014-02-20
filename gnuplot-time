@@ -99,10 +99,10 @@ TEMPFILE=`tempfile`
 		set xtics out rotate by -35
 		set mouse clipboardformat 5
 		set mouse mouseformat 5
-		set grid
+		set grid ytics mytics lw 2, lw 1
 		set autoscale fix
 
-set key left top Left title 'Legend' box 3
+                set key left top Left title 'Legend' box 3
 
 		$SET_LOGSCALE
 EOF
