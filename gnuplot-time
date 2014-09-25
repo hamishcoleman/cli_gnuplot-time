@@ -175,6 +175,7 @@ EOF
 
             # try to guess the column name
             my $FIELD=`$FILECMD | head -500 | egrep "^#column $f " |head -1 | cut -d" " -f3-`;
+            chomp($FIELD);
 
             my $TITLE;
             if ($FIELD ne '') {
