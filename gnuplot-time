@@ -129,9 +129,11 @@ EOF
     }
     $s.="\n";
 
+    # FIXME - these two used for communication between runs of the for loop
     my $FILECMD;
-    my $FILE;
     my $FILE_TITLE;
+
+    my $FILE;
 
     my $LINE;
     for my $f (@ARGV) {
@@ -156,28 +158,29 @@ EOF
             next;
         }
 
-        my $THIS;
+        my $TITLE;
 
         if ( $f =~ m/^f:(.*)/ ) {
             # This arg is a function
-            $THIS='('.$1.')';
+            $f='('.$1.')';
+            $TITLE = '';
         } else {
             # This arg is a column
 
             # try to guess the column name
+            # FIXME - dont shell out
             my $FIELD=`$FILECMD | head -500 | egrep "^#column $f " |head -1 | cut -d" " -f3-`;
             chomp($FIELD);
 
-            my $TITLE;
             if ($FIELD ne '') {
                 $TITLE="$FIELD=";
             } else {
                 $TITLE="";
             }
-
-            $TITLE="$TITLE$FILE_TITLE:$f";
-            $THIS="'$FILE' using $option->{xcol}:$f $option->{smooth} title '$TITLE'";
         }
+
+        $TITLE="$TITLE$FILE_TITLE:$f";
+        my $THIS="'$FILE' using $option->{xcol}:$f $option->{smooth} title '$TITLE'";
 
         if (defined($LINE)) {
             $LINE.=",";
