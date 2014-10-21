@@ -28,7 +28,8 @@ my $option = {
     xlabel  => 'Time (GMT)',
     xformat => '%Y-%m-%d %H:%M',
     smooth  => '',
-    output  => 'screen',
+    output  => 'x11',
+    outputoptions => '',
 };
 my @option_list = (
     "show",
@@ -41,6 +42,8 @@ my @option_list = (
     "days",
     "pdf=s",
     "ps=s",
+    "output=s",
+    "outputfile=s",
 );
 
 sub usage() {
@@ -71,11 +74,18 @@ sub main() {
     if ($option->{pdf}) {
         $option->{output}='pdf';
         $option->{outputfile}=$option->{pdf};
+        $option->{outputoptions}="size 11,8";
     }
     if ($option->{ps}) {
         $option->{output}='postscript';
         $option->{outputfile}=$option->{ps};
+        $option->{outputoptions}="color solid";
     }
+
+    if ($option->{output} eq 'x11') {
+        $option->{outputpause} = 1;
+    }
+
     if ($option->{days}) {
         $option->{xformat}='%j';
         $option->{xlabel}='Days';
@@ -119,12 +129,8 @@ EOF
         $s.="set logscale y\n";
     }
 
-    if ($option->{output} ne 'screen') {
-        if ($option->{output} eq 'pdf') {
-            $s.="set terminal pdf size 11,8\n";
-        } elsif ($option->{output} eq "postscript") {
-            $s.="set terminal postscript color solid\n";
-        }
+    $s.="set terminal ".$option->{output}." ".$option->{outputoptions}."\n";
+    if ($option->{outputfile}) {
         $s.="set output '$option->{outputfile}'\n";
     }
     $s.="\n";
@@ -196,7 +202,7 @@ EOF
     $s.="plot $LINE\n";
     $s.="\n";
 
-    if ($option->{output} eq 'screen') {
+    if ($option->{outputpause}) {
         $s.="pause mouse close\n";
     }
 #
