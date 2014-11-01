@@ -28,7 +28,7 @@ my $option = {
     xlabel  => 'Time (GMT)',
     xformat => '%Y-%m-%d %H:%M',
     smooth  => '',
-    output  => 'x11',
+    output  => '',
     outputoptions => '',
 };
 my @option_list = (
@@ -86,6 +86,15 @@ sub main() {
         $option->{outputpause} = 1;
     }
 
+    #if ($option->{output} eq 'wxt') {
+    #    $option->{outputpause} = 1;
+    #    $option->{outputoptions}="size 800,600";
+    #}
+
+    if ($option->{output} eq '') {
+        $option->{outputpause} = 1;
+    }
+
     if ($option->{days}) {
         $option->{xformat}='%j';
         $option->{xlabel}='Days';
@@ -129,7 +138,9 @@ EOF
         $s.="set logscale y\n";
     }
 
-    $s.="set terminal ".$option->{output}." ".$option->{outputoptions}."\n";
+    if ($option->{output}) {
+        $s.="set terminal ".$option->{output}." ".$option->{outputoptions}."\n";
+    }
     if ($option->{outputfile}) {
         $s.="set output '$option->{outputfile}'\n";
     }
