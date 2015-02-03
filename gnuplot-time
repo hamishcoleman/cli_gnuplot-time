@@ -150,8 +150,8 @@ EOF
 
     # FIXME - these two used for communication between runs of the for loop
     my $FILECMD;
-    my $FILE_TITLE;
 
+    my $tsv_filename;  # name of the most recent TSV file
     my $FILE;
 
     my @plots;
@@ -173,7 +173,7 @@ EOF
             } else {
                 $FILECMD="cat $FILE";
             }
-            $FILE_TITLE=$f;
+            $tsv_filename=$f;
             next;
         }
 
@@ -198,7 +198,7 @@ EOF
             }
         }
 
-        $TITLE="$TITLE$FILE_TITLE:$f";
+        $TITLE="$TITLE$tsv_filename:$f";
         my $THIS="'$FILE' using $option->{xcol}:$f $option->{smooth} title '$TITLE'";
 
         push @plots,$THIS;
