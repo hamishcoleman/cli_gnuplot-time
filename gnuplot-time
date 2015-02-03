@@ -154,7 +154,7 @@ EOF
 
     my $FILE;
 
-    my $LINE;
+    my @plots;
     for my $f (@ARGV) {
 
         if ( -e $f ) {
@@ -201,18 +201,16 @@ EOF
         $TITLE="$TITLE$FILE_TITLE:$f";
         my $THIS="'$FILE' using $option->{xcol}:$f $option->{smooth} title '$TITLE'";
 
-        if (defined($LINE)) {
-            $LINE.=",";
-        }
-        $LINE.="\\\n $THIS";
+        push @plots,$THIS;
     }
 
-    if (!defined($LINE)) {
+    if (!@plots) {
         # default to column 2, if none are on the cmdline
-        $LINE="'$FILE' using $option->{xcol}:2 title '$FILE:2'";
+        push @plots, "'$FILE' using $option->{xcol}:2 title '$FILE:2'";
     }
 
-    $s.="plot $LINE\n";
+    $s.="plot \\\n";
+    $s.=join(",\\\n",@plots);
     $s.="\n";
 
     if ($option->{outputpause}) {
