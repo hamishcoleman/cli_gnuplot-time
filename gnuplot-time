@@ -177,12 +177,14 @@ EOF
             next;
         }
 
-        my $TITLE;
+        my $THIS;
 
         if ( $f =~ m/^f:(.*)/ ) {
             # This arg is a function
             $f='('.$1.')';
-            $TITLE = '';
+
+            # FIXME - this string is pretty much repeated below
+            $THIS="'$FILE' using $option->{xcol}:$f $option->{smooth} title '$tsv_filename:$f'";
         } else {
             # This arg is a column
 
@@ -191,16 +193,15 @@ EOF
             my $FIELD=`$FILECMD | head -500 | egrep "^#column $f " |head -1 | cut -d" " -f3-`;
             chomp($FIELD);
 
+            my $TITLE;
             if ($FIELD ne '') {
-                $TITLE="$FIELD=";
+                # if we have a field name, show it in the title
+                $TITLE="$FIELD=$tsv_filename:$f";
             } else {
-                $TITLE="";
+                $TITLE="$tsv_filename:$f";
             }
+            $THIS="'$FILE' using $option->{xcol}:$f $option->{smooth} title '$TITLE'";
         }
-
-        $TITLE="$TITLE$tsv_filename:$f";
-        my $THIS="'$FILE' using $option->{xcol}:$f $option->{smooth} title '$TITLE'";
-
         push @plots,$THIS;
     }
 
