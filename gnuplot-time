@@ -183,8 +183,16 @@ EOF
             # This arg is a function
             $f='('.$1.')';
 
-            # FIXME - this string is pretty much repeated below
-            $THIS="'$FILE' using $option->{xcol}:$f $option->{smooth} title '$tsv_filename:$f'";
+            if ($f =~ m/\$/) {
+                # If it contains a dollar sign, it is referencing the existing file
+
+                # FIXME - this string is pretty much repeated below
+                $THIS="'$FILE' using $option->{xcol}:$f $option->{smooth} title '$tsv_filename:$f'";
+            } else {
+                # if it has no dollar sign, treat it is a pure plot
+                $THIS=$f;
+            }
+
         } else {
             # This arg is a column
 
