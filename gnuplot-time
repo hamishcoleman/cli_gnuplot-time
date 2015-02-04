@@ -181,7 +181,7 @@ EOF
 
         if ( $f =~ m/^f:(.*)/ ) {
             # This arg is a function
-            $f='('.$1.')';
+            $f=$1;
 
             if ($f =~ m/\$/) {
                 # If it contains a dollar sign, it is referencing the existing file
