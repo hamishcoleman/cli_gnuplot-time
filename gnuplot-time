@@ -65,6 +65,21 @@ allowed and specially formatted comments can name the columns.
 EOF
 }
 
+# Given a filename, return the commandline that would uncompress and cat it.
+# Since this is used instead of just providing a filename, the obvious null
+# function of "just cat" is instead returned as undef
+sub get_catcmd {
+    my ($filename) = @_;
+
+         if ( $filename =~ m/\.gz$/ ) {
+        return "gzip -dc $filename";
+    } elsif ( $filename =~ m/\.xz$/ ) {
+        return "xz -dc $filename";
+    }
+
+    return undef;
+}
+
 # Given a column ID (could be a number or a name), attempt to determine the
 # missing data - returning both the column number and a name for that column
 #
@@ -75,13 +90,8 @@ sub guess_column {
     my $column_number;
     my $column_name;
 
-    my $catcmd;
-
-         if ( $filename =~ m/\.gz$/ ) {
-        $catcmd="gzip -dc $filename";
-    } elsif ( $filename =~ m/\.xz$/ ) {
-        $catcmd="xz -dc $filename";
-    } else {
+    my $catcmd = get_catcmd($filename);
+    if (!defined($catcmd)) {
         $catcmd="cat $filename";
     }
 
@@ -180,7 +190,6 @@ EOF
     $s.="\n";
 
     # FIXME - these two used for communication between runs of the for loop
-    my $FILECMD;
 
     my $tsv_filename;  # name of the most recent TSV file
     my $FILE;
@@ -190,21 +199,15 @@ EOF
 
         if ( -e $f ) {
             # This arg is a filename
-            if ( $f =~ m/\.gz$/ ) {
-                $FILECMD="gzip -dc $f";
-            } elsif ( $f =~ m/\.xz$/ ) {
-                $FILECMD="xz -dc $f";
-            } else {
-		$FILE=$f;
-                $FILECMD=undef;
-            }
 
-            if (defined($FILECMD)) {
-                $FILE="<$FILECMD";
-            } else {
-                $FILECMD="cat $FILE";
-            }
             $tsv_filename=$f;
+
+            my $catcmd = get_catcmd($tsv_filename);
+            if (defined($catcmd)) {
+                $FILE = '<'.$catcmd;
+            } else {
+                $FILE = $tsv_filename;
+            }
             next;
         }
 
