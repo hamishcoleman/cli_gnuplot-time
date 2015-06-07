@@ -65,6 +65,35 @@ allowed and specially formatted comments can name the columns.
 EOF
 }
 
+# Given a column ID (could be a number or a name), attempt to determine the
+# missing data - returning both the column number and a name for that column
+#
+# TODO - handle name in input, not just number
+sub guess_column {
+    my ($filename,$column) = @_;
+
+    my $column_number;
+    my $column_name;
+
+    my $catcmd;
+
+         if ( $filename =~ m/\.gz$/ ) {
+        $catcmd="gzip -dc $filename";
+    } elsif ( $filename =~ m/\.xz$/ ) {
+        $catcmd="xz -dc $filename";
+    } else {
+        $catcmd="cat $filename";
+    }
+
+    # FIXME - dont shell out
+    $column_name=`$catcmd | head -500 | egrep "^#column $column " |head -1 | cut -d" " -f3-`;
+    chomp($column_name);
+
+    $column_number = $column;
+
+    return ($column_number,$column_name);
+}
+
 sub main() {
     HC::Common::do_options($option,@option_list);
     if (defined($option->{help})) {
@@ -195,18 +224,16 @@ EOF
                 $THIS=$f;
             }
 
-        } elsif (defined($FILECMD)) {
+        } elsif (defined($tsv_filename)) {
             # This arg is a column
 
             # try to guess the column name
-            # FIXME - dont shell out
-            my $FIELD=`$FILECMD | head -500 | egrep "^#column $f " |head -1 | cut -d" " -f3-`;
-            chomp($FIELD);
+            my ($nr,$column_name)=guess_column($tsv_filename,$f);
 
             my $TITLE;
-            if ($FIELD ne '') {
+            if ($column_name ne '') {
                 # if we have a field name, show it in the title
-                $TITLE="$FIELD=$tsv_filename:$f";
+                $TITLE="$column_name=$tsv_filename:$f";
             } else {
                 $TITLE="$tsv_filename:$f";
             }
