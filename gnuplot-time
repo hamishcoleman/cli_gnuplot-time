@@ -104,6 +104,42 @@ sub guess_column {
     return ($column_number,$column_name);
 }
 
+# return the gnuplot command fragment for plotting the given file and column
+#
+sub get_plotcmd {
+    my ($filename,$column) = @_;
+
+    my $plotfile = get_catcmd($filename);
+    if (defined($plotfile)) {
+        $plotfile = '<'.$plotfile;
+    } else {
+        $plotfile = $filename;
+    }
+
+    my $TITLE;
+
+    if ( $column =~ m/^f:(.*)/ ) {
+        # This arg is a function
+        $column=$1;
+        $TITLE="'$filename:$column'";
+    } else {
+
+        # try to guess the column name
+        my ($nr,$column_name)=guess_column($filename,$column);
+
+        if ($column_name ne '') {
+            # if we have a field name, show it in the title
+            $TITLE="$column_name=$filename:$column";
+        } else {
+            $TITLE="$filename:$column";
+        }
+    }
+
+    my $THIS="'$plotfile' using $option->{xcol}:$column $option->{smooth} title '$TITLE'";
+
+    return $THIS;
+}
+
 sub main() {
     HC::Common::do_options($option,@option_list);
     if (defined($option->{help})) {
@@ -189,67 +225,65 @@ EOF
     }
     $s.="\n";
 
-    # FIXME - these two used for communication between runs of the for loop
-
-    my $tsv_filename;  # name of the most recent TSV file
-    my $FILE;
+    my @save_files;
+    my @save_columns;
+    my $plotted_save_files=0;
+    my $plotted_save_columns=0;
 
     my @plots;
     for my $f (@ARGV) {
 
-        if ( -e $f ) {
-            # This arg is a filename
+        if ( $f =~ m/^f:([^\$]+)/ ) {
+            # this is a function with no reference to a file column
+            push @plots, $1;
+        } elsif ( -e $f ) {
+            # This arg is a filename (TODO - improve on 'if exists')
 
-            $tsv_filename=$f;
-
-            my $catcmd = get_catcmd($tsv_filename);
-            if (defined($catcmd)) {
-                $FILE = '<'.$catcmd;
+            if (@save_columns) {
+                # we have some columns queued up
+                for my $column (@save_columns) {
+                    push @plots, get_plotcmd($f,$column);
+                }
+                $plotted_save_columns = 1;
             } else {
-                $FILE = $tsv_filename;
+                # save this file for later plotting
+                if ($plotted_save_files) {
+                    $plotted_save_files=0;
+                    @save_files = $f;
+                } else {
+                    push @save_files, $f;
+                }
             }
-            next;
-        }
-
-        my $THIS;
-
-        if ( $f =~ m/^f:(.*)/ ) {
-            # This arg is a function
-            $f=$1;
-
-            if ($f =~ m/\$/) {
-                # If it contains a dollar sign, it is referencing the existing file
-
-                # FIXME - this string is pretty much repeated below
-                $THIS="'$FILE' using $option->{xcol}:$f $option->{smooth} title '$tsv_filename:$f'";
-            } else {
-                # if it has no dollar sign, treat it is a pure plot
-                $THIS=$f;
-            }
-
-        } elsif (defined($tsv_filename)) {
-            # This arg is a column
-
-            # try to guess the column name
-            my ($nr,$column_name)=guess_column($tsv_filename,$f);
-
-            my $TITLE;
-            if ($column_name ne '') {
-                # if we have a field name, show it in the title
-                $TITLE="$column_name=$tsv_filename:$f";
-            } else {
-                $TITLE="$tsv_filename:$f";
-            }
-            $THIS="'$FILE' using $option->{xcol}:$f $option->{smooth} title '$TITLE'";
         } else {
-            die "no filename";
+            # must be a column then
+
+            if (@save_files) {
+                # we have some files queued up
+                for my $file (@save_files) {
+                    push @plots, get_plotcmd($file,$f);
+                }
+                $plotted_save_files = 1;
+            } else {
+                # save this column for later plotting
+                if ($plotted_save_columns) {
+                    $plotted_save_columns=0;
+                    @save_columns = $f;
+                } else {
+                    push @save_columns, $f;
+                }
+            }
         }
-        push @plots,$THIS;
     }
 
-    if (!@plots) {
-        # default to column 2, if none are on the cmdline
-        push @plots, "'$FILE' using $option->{xcol}:2 title '$FILE:2'";
+    if (@save_columns and !$plotted_save_columns) {
+        die("unused columns found");
+    }
+
+    # default to column 2, if none are on the cmdline
+    if (@save_files and !$plotted_save_files) {
+        for my $file (@save_files) {
+            push @plots, get_plotcmd($file,2);
+        }
     }
 
     $s.="plot \\\n";
