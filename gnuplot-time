@@ -96,7 +96,7 @@ sub guess_column {
     }
 
     # FIXME - dont shell out
-    $column_name=`$catcmd | head -500 | egrep "^#column $column " |head -1 | cut -d" " -f3-`;
+    $column_name=`$catcmd | head -500 | egrep -a "^#column $column " |head -1 | cut -d" " -f3-`;
     chomp($column_name);
 
     $column_number = $column;
@@ -120,8 +120,8 @@ sub get_plotcmd {
 
     if ( $column =~ m/^f:(.*)/ ) {
         # This arg is a function
-        $column=$1;
-        $TITLE="'$filename:$column'";
+        $column="(".$1.")";
+        $TITLE="$filename:$column";
     } else {
 
         # try to guess the column name
@@ -276,7 +276,7 @@ EOF
     }
 
     if (@save_columns and !$plotted_save_columns) {
-        die("unused columns found");
+        die("unused columns found: ",join(' ',@save_columns));
     }
 
     # default to column 2, if none are on the cmdline
