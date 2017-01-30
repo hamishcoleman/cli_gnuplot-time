@@ -39,12 +39,14 @@ my @option_list = (
     "lines!",
     "xcol|x=s",
     "ylabel=s",
+    "xlabel=s",
     "smooth!",
     "days",
     "pdf=s",
     "ps=s",
     "output=s",
     "outputfile=s",
+    "notime",
 );
 
 sub usage() {
@@ -59,6 +61,7 @@ Usage: $0 [--help] [--pdf FILENAME] ( FILE [FIELD...] )...
 --ylabel X  - set the y label
 --smooth    - apply some simple smoothing to plot
 --days      - Show time as days since start of year
+--notime    - the X axis is not a date/time after all
 
 Files a tab separated data, first column has epoch date data.  Comments are
 allowed and specially formatted comments can name the columns.
@@ -174,6 +177,7 @@ sub main() {
     if ($option->{days}) {
         $option->{xformat}='%j';
         $option->{xlabel}='Days';
+        # FIXME - dont overwrite it if xlabel has been given on the cmdline
     }
     if ($option->{smooth}) {
         $option->{title}.=' (smoothed)';
@@ -194,13 +198,9 @@ sub main() {
         set xlabel '$option->{xlabel}'
         set ylabel '$option->{ylabel}'
 
-        set timefmt '%s'
-        set xdata time
-        set format x '$option->{xformat}'
         #set xtics out rotate by -15 86400
         set xtics out rotate by -15
         set mouse clipboardformat 5
-        set mouse mouseformat 5
         set grid ytics mytics lw 2, lw 1
         set grid xtics
         set autoscale fix
@@ -209,6 +209,14 @@ sub main() {
 
 EOF
 ;
+    if ($option->{notime}) {
+    } else {
+        $s.="set timefmt '%s'\n";
+        $s.="set xdata time\n";
+        $s.="set format x '$option->{xformat}'\n";
+        $s.="set mouse mouseformat 5\n";
+        # FIXME - if xlabel is default, change it to "Units"
+    }
 
     if ($option->{lines}) {
         $s.="set style data lines\n";
@@ -307,7 +315,16 @@ EOF
         # it before the shell prompt is returned, but it ignores that data
         close STDIN;
 
-        system("gnuplot $filename");
+        my $gnuplot;
+        if ( -e '/usr/bin/gnuplot4-x11' ) {
+            $gnuplot = '/usr/bin/gnuplot4-x11';
+        } elsif (-e '/usr/bin/gnuplot4' ) {
+            $gnuplot = '/usr/bin/gnuplot4';
+        } else {
+            $gnuplot = 'gnuplot';
+        }
+
+        system("$gnuplot $filename");
         unlink($filename);
     }
 
