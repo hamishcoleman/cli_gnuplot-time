@@ -101,6 +101,7 @@ sub guess_column {
     # FIXME - dont shell out
     $column_name=`$catcmd | head -500 | egrep -a "^#column $column " |head -1 | cut -d" " -f3-`;
     chomp($column_name);
+    $column_name =~ s/\r//;
 
     $column_number = $column;
 
@@ -200,7 +201,7 @@ sub main() {
 
         #set xtics out rotate by -15 86400
         set xtics out rotate by -15
-        set mouse clipboardformat 5
+        #set mouse clipboardformat 5
         set grid ytics mytics lw 2, lw 1
         set grid xtics
         set autoscale fix
