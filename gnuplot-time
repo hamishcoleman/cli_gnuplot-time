@@ -180,6 +180,11 @@ sub main() {
         $option->{xlabel}='Days';
         # FIXME - dont overwrite it if xlabel has been given on the cmdline
     }
+    if ($option->{notime}) {
+        $option->{xlabel}='Units';
+        $option->{title}='';
+        # FIXME - dont overwrite it if xlabel has been given on the cmdline
+    }
     if ($option->{smooth}) {
         $option->{title}.=' (smoothed)';
         $option->{smooth}="smooth bezier";
@@ -216,7 +221,6 @@ EOF
         $s.="set xdata time\n";
         $s.="set format x '$option->{xformat}'\n";
         $s.="set mouse mouseformat 5\n";
-        # FIXME - if xlabel is default, change it to "Units"
     }
 
     if ($option->{lines}) {
