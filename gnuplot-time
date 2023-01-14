@@ -42,6 +42,7 @@ my @option_list = (
     "xlabel=s",
     "smooth!",
     "days",
+    "sixel",
     "pdf=s",
     "ps=s",
     "output=s",
@@ -151,6 +152,9 @@ sub main() {
         return -1;
     };
 
+    if ($option->{sixel}) {
+        $option->{output}='sixelgd';
+    }
     if ($option->{pdf}) {
         $option->{output}='pdf';
         $option->{outputfile}=$option->{pdf};
