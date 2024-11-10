@@ -1,0 +1,80 @@
+#!/usr/bin/env perl
+use warnings;
+use strict;
+#
+# Given a "tsv" file on input, with the first column being a unix timestamp.
+# Read in every other value and output a "rate converted" version.
+#
+# Ie, convert an absolute number of connections seen at time into the rate
+# of connections per second seen at time
+#
+
+print("#Rateconverted to persecond values\n");
+
+my $last;
+
+while(<>) {
+    chomp; s/\r//;
+
+    if (m/^#/) {
+        # comment lines are passed through
+        print($_,"\n");
+        next;
+    }
+
+    if (m/^$/) {
+        # empty lines indicate a time discontinuity
+        $last=undef;
+        print("\n");
+        next;
+    }
+
+    my $now = [];
+    
+    @{$now} = split(/\s/,$_);
+
+    if(!defined($last)) {
+        # this is the first sample after a discontinuity - there is no rate
+        # save the data and move on
+        $last = $now;
+        next;
+    }
+
+    my $delta = [];
+    for my $i (0..scalar(@{$now})-1) {
+        if (!defined($last->[$i]) || $now->[$i] eq '\N' || $last->[$i] eq '\N') {
+            $delta->[$i] = '\N';
+            next;
+        }
+        $delta->[$i] = $now->[$i] - $last->[$i];
+    }
+
+    my $deltat = shift @{$delta};
+    if ($deltat == 0) {
+        # crazy
+        warn("Zero delta time at $now->[0]\n");
+        next;
+    }
+
+    if ($deltat < 0) {
+        # crazy
+        warn("Problem with delta time at $now->[0] deltat=$deltat\n");
+        next;
+    }
+
+    for my $i (0..scalar(@{$delta})-1) {
+        next if ($delta->[$i] eq '\N');
+        $delta->[$i] = $delta->[$i]/$deltat;
+    }
+
+    print(
+        join("\t",
+            $now->[0],
+            @{$delta},
+        ),
+        "\n",
+    );
+
+    $last = $now;
+}
+
