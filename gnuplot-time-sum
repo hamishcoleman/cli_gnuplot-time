@@ -1,0 +1,74 @@
+#!/usr/bin/env perl
+use warnings;
+use strict;
+#
+# Summarise a gnuplot-time file
+#
+# daily: count,min,max,average :: bucket = 86400
+# day-of-year: min,max,average :: bucket = 
+# day-of-week: min,max,average
+# hour: min,max,average
+# day-of-week,hour: min,max,average
+
+my $column = (shift @ARGV) -1;
+
+my $db;
+
+while(<>) {
+    chomp;
+    my @f = split(/\s/);
+
+    next if (m/^#/);
+    next if (m/^$/);
+
+    my $this;
+    $this->{time} = $f[0];
+    $this->{val}  = $f[$column];
+
+    my $daynr = int($this->{time} / 86400); # FIXME, use real timevals
+    my $doy = $daynr % 365;
+    my $dow = $doy % 7;
+    my $hour = int(($this->{time} % 86400) / 3600);
+
+    my $bucket;
+    #$bucket = $daynr * 86400;
+    #$bucket = $doy * 86400;
+    #$bucket = $dow * 86400;
+    #$bucket = $hour * 3600;
+    $bucket = $dow * 86400 + $hour * 3600;
+
+    $db->{bucket}{$bucket}{count}++;
+    $db->{bucket}{$bucket}{sum}+=$this->{val};
+    $db->{bucket}{$bucket}{sumsquares}+=$this->{val}**2;
+
+    if (!defined($db->{bucket}{$bucket}{min}) || $db->{bucket}{$bucket}{min}>$this->{val}) {
+        $db->{bucket}{$bucket}{min}=$this->{val};
+    }
+    if (!defined($db->{bucket}{$bucket}{max}) || $db->{bucket}{$bucket}{max}<$this->{val}) {
+        $db->{bucket}{$bucket}{max}=$this->{val};
+    }
+}
+
+print("#column 1 timestamp\n");
+print("#column 2 count\n");
+print("#column 3 sum\n");
+print("#column 4 sumsquares\n");
+print("#column 5 min\n");
+print("#column 6 max\n");
+print("#column 7 mean\n");
+print("#column 8 stddev\n");
+
+for my $bucket (sort {$a <=> $b} keys(%{$db->{bucket}})) {
+    my $mean = $db->{bucket}{$bucket}{sum} / $db->{bucket}{$bucket}{count};
+    printf("%i %i %i %i %3.1f %3.1f %3.1f %3.1f\n",
+        $bucket,
+        $db->{bucket}{$bucket}{count},
+        $db->{bucket}{$bucket}{sum},
+        $db->{bucket}{$bucket}{sumsquares},
+        $db->{bucket}{$bucket}{min},
+        $db->{bucket}{$bucket}{max},
+        $mean,
+        $db->{bucket}{$bucket}{sumsquares} - ($db->{bucket}{$bucket}{sum}**2)/$db->{bucket}{$bucket}{count},
+        
+    );
+}
