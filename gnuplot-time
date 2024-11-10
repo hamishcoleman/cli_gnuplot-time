@@ -3,6 +3,11 @@ use warnings;
 use strict;
 #
 # Plot tab separated values time series data
+#
+# :dotsctl:
+#   destdir: ~/bin/
+# ...
+#
 
 use File::Spec;
 
