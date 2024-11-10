@@ -18,7 +18,8 @@ $Data::Dumper::Quotekeys = 0;
 
 use File::Temp qw( tempfile );
 
-use HC::Common;
+use Getopt::Long 2.33 qw(:config gnu_getopt no_auto_abbrev);
+use Pod::Usage;
 use Time::Local;
 
 my $option = {
@@ -69,6 +70,31 @@ Usage: $0 [--help] [--pdf FILENAME] ( FILE [FIELD...] )...
 Files a tab separated data, first column has epoch date data.  Comments are
 allowed and specially formatted comments can name the columns.
 EOF
+}
+
+sub options2string {
+    my @option_list = grep {$_} @_;
+    foreach(sort @option_list) {
+        $_="--".$_;
+    }
+    return join(", ",@option_list);
+}
+
+sub do_options {
+    my $option = shift || die "no option!";
+    my @option_list = grep {$_} @_;
+    GetOptions($option,@option_list,'man','help|?') or pod2usage(2);
+    if ($option->{help} && @option_list) {
+        print("List of options:\n");
+        print("\t");
+        print options2string(@_);
+        print("\n");
+    }
+    pod2usage(-exitstatus => 0, -verbose => 2) if $option->{man};
+
+    if ($option->{quiet}) {
+        delete $option->{verbose};
+    }
 }
 
 # Given a filename, return the commandline that would uncompress and cat it.
@@ -159,7 +185,7 @@ sub get_plotcmd {
 }
 
 sub main() {
-    HC::Common::do_options($option,@option_list);
+    do_options($option,@option_list);
     if (defined($option->{help})) {
         usage();
         return -1;
